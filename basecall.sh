@@ -1,0 +1,15 @@
+nextflow run main.nf \
+	--INPUT <path to input> \
+	--PHOENIX \
+	--MODEL <path to dorado model directory> \
+	--GPU \
+	--GPU_NUM <number of GPUs on node to use> \
+	--SAMPLESHEET ./samplesheet.csv \
+	--BASE <run name> \
+	--KIT <kit for demux> \
+	--dorado_runoptions "<extra options to pass to dorado>" \
+	--output <output directory name> \
+	-bg \
+	--DEMUX \
+	-with-docker ubuntu:23.04 \
+	-resume

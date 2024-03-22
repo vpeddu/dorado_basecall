@@ -1,0 +1,8 @@
+barcode,position_id,kit,type,alias,experiment_id
+barcode01,X1,SQK-NBD114-24,test_sample,K1,03_11_24_R1041_Lig_RNABCTest_IPSCEXRNA_1
+barcode02,X1,SQK-NBD114-24,test_sample,K2,03_11_24_R1041_Lig_RNABCTest_IPSCEXRNA_1
+barcode03,X1,SQK-NBD114-24,test_sample,K3,03_11_24_R1041_Lig_RNABCTest_IPSCEXRNA_1
+barcode04,X1,SQK-NBD114-24,test_sample,S1,03_11_24_R1041_Lig_RNABCTest_IPSCEXRNA_1
+barcode05,X1,SQK-NBD114-24,test_sample,S2,03_11_24_R1041_Lig_RNABCTest_IPSCEXRNA_1
+barcode06,X1,SQK-NBD114-24,test_sample,S3,03_11_24_R1041_Lig_RNABCTest_IPSCEXRNA_1
+barcode07,X1,SQK-NBD114-24,no_template_control,NTC,03_11_24_R1041_Lig_RNABCTest_IPSCEXRNA_1
