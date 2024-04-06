@@ -1,6 +1,6 @@
 process Basecall { 
 //conda "${baseDir}/env/env.yml"
-publishDir "${params.output}/basecall/${base}", mode: 'symlink', overwrite: true
+publishDir "${params.output}/basecall/", mode: 'symlink', overwrite: true
 container  "genomicpariscentre/dorado:0.5.3"
 cpus 24
 memory '128 GB'
@@ -41,7 +41,7 @@ echo "finished basecalling"
 }
 process Demux { 
 //conda "${baseDir}/env/env.yml"
-publishDir "${params.output}/demux/${base}", mode: 'symlink', overwrite: true
+publishDir "${params.output}/demux/", mode: 'symlink', overwrite: true
 cpus 32
 memory '128 GB'
 container  "genomicpariscentre/dorado:0.5.3"
@@ -54,7 +54,7 @@ input:
     val base
 //    val modelname
 output: 
-    file  "${base}.barcoded_output"
+    file  "${base}.barcoded_output/*.fastq.gz"
 
 script:
 """
@@ -73,6 +73,8 @@ echo "dorado version"
     -t ${task.cpus} 
 echo "finished Demux"
 
+find ${base}.barcoded_output/ -name *.fastq | xargs -I {} gzip {} \\;
+
 #dorado demux basecalled.fastq.gz \
 #    --sample-sheet samplesheet.csv \
 #    --emit-fastq \
@@ -80,5 +82,36 @@ echo "finished Demux"
 #    --kit-name SQK-NBD114-24 \
 #    -t 32
 
+"""
+}
+process Trim { 
+//conda "${baseDir}/env/env.yml"
+publishDir "${params.output}/trim/", mode: 'symlink', overwrite: true
+cpus 32
+memory '32 GB'
+container  "alexdhill/complete-seq:latest"
+beforeScript 'chmod o+rw .'
+
+input: 
+    file demuxed_fastq
+//    val modelname
+output: 
+    file  "*.trimmed.fastq.gz"
+
+script:
+"""
+#!/bin/bash
+
+ls -lah 
+
+echo "dorado version"
+/opt/dorado/bin/dorado --version 2>&1
+
+sname = $(basename -s .fastq.gz ${demuxed_fastq})
+
+            porechop -i ${demuxed_fastq} \
+                --format auto \
+                -t ${task.cpus} \
+                -o \$sname.trim.fastq.gz
 """
 }
