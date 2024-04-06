@@ -19,5 +19,9 @@ params.DEMUX = false
             params.KIT,
             params.BASE
         )
+        Trim(
+            Demux.out,
+            params.BASE
+        )
     }     
     }
