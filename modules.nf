@@ -1,4 +1,4 @@
-process Basecall { 
+process Basecall {
 //conda "${baseDir}/env/env.yml"
 publishDir "${params.output}/basecall/", mode: 'symlink', overwrite: true
 container  "genomicpariscentre/dorado:0.5.3"
@@ -6,19 +6,19 @@ cpus 24
 memory '128 GB'
 beforeScript 'chmod o+rw .'
 label (params.GPU == "ON" ? 'with_gpus': 'with_cpus')
-input: 
+input:
     path pod5
     path model
     val base
 //    val modelname
-output: 
+output:
     file "basecalled.fastq.gz"
 
 script:
 """
 #!/bin/bash
 
-ls -lah 
+ls -lah
 
 
 #export CUDA_VISIBLE_DEVICES=0
@@ -39,7 +39,7 @@ echo "finished basecalling"
 """
 
 }
-process Demux { 
+process Demux {
 //conda "${baseDir}/env/env.yml"
 publishDir "${params.output}/demux/", mode: 'symlink', overwrite: true
 cpus 32
@@ -47,20 +47,20 @@ memory '128 GB'
 container  "genomicpariscentre/dorado:0.5.3"
 beforeScript 'chmod o+rw .'
 
-input: 
+input:
     file  basecalled_fastq
     file samplesheet
     val kit
     val base
 //    val modelname
-output: 
+output:
     file  "${base}.barcoded_output/*.fastq.gz"
 
 script:
 """
 #!/bin/bash
 
-ls -lah 
+ls -lah
 
 echo "dorado version"
 /opt/dorado/bin/dorado --version 2>&1
@@ -70,10 +70,10 @@ echo "dorado version"
     --output-dir ${base}.barcoded_output \
     --sample-sheet ${samplesheet} \
     --kit-name ${kit} \
-    -t ${task.cpus} 
+    -t ${task.cpus}
 echo "finished Demux"
 
-find ${base}.barcoded_output/ -name *.fastq | xargs -I {} gzip {} \\;
+find ${base}.barcoded_output/ -name *.fastq | xargs -I {} gzip {}
 
 #dorado demux basecalled.fastq.gz \
 #    --sample-sheet samplesheet.csv \
@@ -84,7 +84,7 @@ find ${base}.barcoded_output/ -name *.fastq | xargs -I {} gzip {} \\;
 
 """
 }
-process Trim { 
+process Trim {
 //conda "${baseDir}/env/env.yml"
 publishDir "${params.output}/trim/", mode: 'symlink', overwrite: true
 cpus 32
@@ -92,22 +92,22 @@ memory '32 GB'
 container  "alexdhill/complete-seq:latest"
 beforeScript 'chmod o+rw .'
 
-input: 
+input:
     file demuxed_fastq
 //    val modelname
-output: 
-    file  "*.trimmed.fastq.gz"
+output:
+    file  "*.trim.fastq.gz"
 
 script:
 """
 #!/bin/bash
 
-ls -lah 
+ls -lah
 
 echo "dorado version"
 /opt/dorado/bin/dorado --version 2>&1
 
-sname = $(basename -s .fastq.gz ${demuxed_fastq})
+sname=\$(basename -s .fastq.gz ${demuxed_fastq})
 
             porechop -i ${demuxed_fastq} \
                 --format auto \
