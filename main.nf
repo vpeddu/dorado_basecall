@@ -3,11 +3,12 @@ nextflow.enable.dsl=2
 
 include { Basecall } from './modules.nf'
 include { Demux } from './modules.nf'
+include { Trim } from './modules.nf'
 
 params.generate_db = false
 params.DEMUX = false
     workflow{
-        Basecall( 
+        Basecall(
             params.INPUT,
             params.MODEL,
             params.BASE
@@ -20,8 +21,7 @@ params.DEMUX = false
             params.BASE
         )
         Trim(
-            Demux.out,
-            params.BASE
+            Demux.out.flatten()
         )
-    }     
+    }
     }
