@@ -1,7 +1,7 @@
 process Basecall {
 //conda "${baseDir}/env/env.yml"
 publishDir "${params.output}/basecall/", mode: 'symlink', overwrite: true
-container  "genomicpariscentre/dorado:0.5.3"
+container  "genomicpariscentre/dorado:0.8.0"
 cpus 24
 memory '128 GB'
 beforeScript 'chmod o+rw .'
