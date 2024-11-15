@@ -1,7 +1,7 @@
 process Basecall {
 //conda "${baseDir}/env/env.yml"
 publishDir "${params.output}/basecall/", mode: 'symlink', overwrite: true
-container  "genomicpariscentre/dorado:0.8.0"
+container  "genomicpariscentre/dorado:0.8.3"
 cpus 24
 memory '128 GB'
 beforeScript 'chmod o+rw .'
@@ -27,7 +27,7 @@ ls -lah
 ls ${pod5}
 ls ${model}
 
-/opt/dorado/bin/dorado basecaller ${model} ${pod5} ${params.dorado_runoptions}\
+/opt/dorado/bin/dorado basecaller ${model} ${pod5} ${dorado_runoptions}\
     -x "cuda:auto" \
     -r \
     --emit-fastq >basecalled.fastq
@@ -39,12 +39,61 @@ echo "finished basecalling"
 """
 
 }
+
+
+process Basecall_custom {
+//conda "${baseDir}/env/env.yml"
+publishDir "${params.output}/basecall/", mode: 'symlink', overwrite: true
+container  "genomicpariscentre/dorado:0.8.3"
+cpus 24
+memory '128 GB'
+beforeScript 'chmod o+rw .'
+label (params.GPU == "ON" ? 'with_gpus': 'with_cpus')
+input:
+    path pod5
+    path model
+    val base
+    path barcode_arrangement
+    path barcode_sequences
+    val dorado_runoptions
+//    val modelname
+output:
+    file "basecalled.fastq.gz"
+
+script:
+"""
+#!/bin/bash
+
+ls -lah
+
+
+#export CUDA_VISIBLE_DEVICES=0
+#export NVIDIA_VISIBLE_DEVICES=0,1,2,3,4,5
+
+ls ${pod5}
+ls ${model}
+
+/opt/dorado/bin/dorado basecaller ${model} ${pod5} ${dorado_runoptions}\
+    -x "cuda:auto" \
+    -r \
+    --barcode-arrangement ${barcode_arrangement} \
+    --barcode-sequences ${barcode_sequences} \
+    --emit-fastq >basecalled.fastq
+
+gzip basecalled.fastq
+
+echo "finished basecalling"
+
+"""
+
+}
+
 process Demux {
 //conda "${baseDir}/env/env.yml"
 publishDir "${params.output}/demux/", mode: 'symlink', overwrite: true
 cpus 32
 memory '128 GB'
-container  "genomicpariscentre/dorado:0.5.3"
+container  "genomicpariscentre/dorado:0.8.3"
 beforeScript 'chmod o+rw .'
 
 input:
@@ -84,6 +133,7 @@ find ${base}.barcoded_output/ -name *.fastq | xargs -I {} gzip {}
 
 """
 }
+
 process Trim {
 //conda "${baseDir}/env/env.yml"
 publishDir "${params.output}/trim/", mode: 'symlink', overwrite: true

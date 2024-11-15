@@ -1,0 +1,16 @@
+nextflow run main.nf \
+	--INPUT "/private/groups/kimlab/data/nanopore/05_08_24_R1041_LIG_KimLab_IPSC-intra_1/" \
+	--PHOENIX \
+	--MODEL /private/groups/kimlab/vikas/nanopore/models/dna_r10.4.1_e8.2_400bps_sup@v5.0.0/ \
+	--GPU \
+	--GPU_NUM 3 \
+	--SAMPLESHEET ./samplesheet.csv \
+	--BASE ipsc_intra \
+	--KIT "SQK-NBD114-24" \
+	--dorado_runoptions "--kit-name SQK-NBD114-96 --no-trim" \
+	--output 05_08_24_R1041_LIG_KimLab_BAR-CTR-AD_basecalled_supv5 \
+	-bg \
+	--DEMUX \
+	-with-docker ubuntu:23.04 \
+	-resume \
+	-with-tower
