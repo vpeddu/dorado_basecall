@@ -5,7 +5,8 @@ container  "genomicpariscentre/dorado:0.8.3"
 cpus 24
 memory '128 GB'
 beforeScript 'chmod o+rw .'
-label (params.GPU == "ON" ? 'with_gpus': 'with_cpus')
+label (params.GPU ? 'gpu': 'cpu')
+//label (params.GPU == "ON" ? 'with_gpus': 'with_cpus')
 input:
     path pod5
     path model
@@ -20,15 +21,10 @@ script:
 
 ls -lah
 
+echo "using gpus: \$SLURM_JOB_GPUS"
 
-#export CUDA_VISIBLE_DEVICES=0
-#export NVIDIA_VISIBLE_DEVICES=0,1,2,3,4,5
-
-ls ${pod5}
-ls ${model}
-
-/opt/dorado/bin/dorado basecaller ${model} ${pod5} ${dorado_runoptions}\
-    -x "cuda:auto" \
+/opt/dorado/bin/dorado basecaller ${model} ${pod5} \
+    -x "cuda:\$SLURM_JOB_GPUS" \
     -r \
     --emit-fastq >basecalled.fastq
 
@@ -48,7 +44,7 @@ container  "genomicpariscentre/dorado:0.8.3"
 cpus 24
 memory '128 GB'
 beforeScript 'chmod o+rw .'
-label (params.GPU == "ON" ? 'with_gpus': 'with_cpus')
+label (params.GPU ? 'gpu': 'cpu')
 input:
     path pod5
     path model
@@ -58,7 +54,7 @@ input:
     val dorado_runoptions
 //    val modelname
 output:
-    file "basecalled.fastq.gz"
+    file "${base}.basecalled.bam"
 
 script:
 """
@@ -66,26 +62,58 @@ script:
 
 ls -lah
 
+echo "using gpus: \$SLURM_JOB_GPUS"
 
-#export CUDA_VISIBLE_DEVICES=0
-#export NVIDIA_VISIBLE_DEVICES=0,1,2,3,4,5
-
-ls ${pod5}
-ls ${model}
-
-/opt/dorado/bin/dorado basecaller ${model} ${pod5} ${dorado_runoptions}\
+/opt/dorado/bin/dorado basecaller ${model} ${pod5} \
     -x "cuda:auto" \
     -r \
-    --barcode-arrangement ${barcode_arrangement} \
-    --barcode-sequences ${barcode_sequences} \
-    --emit-fastq >basecalled.fastq
-
-gzip basecalled.fastq
+    --no-trim > ${base}.basecalled.bam
 
 echo "finished basecalling"
 
 """
+}
 
+process Demux_custom {
+//conda "${baseDir}/env/env.yml"
+publishDir "${params.output}/demux/", mode: 'symlink', overwrite: true
+cpus 128
+memory '128 GB'
+container  "genomicpariscentre/dorado:0.8.3"
+beforeScript 'chmod o+rw .'
+
+input:
+    file  basecalled_bam
+    path samplesheet
+    val base
+    path barcode_arrangement
+    path barcode_sequences
+//    val modelname
+output:
+    file  "${base}.barcoded_output/*.fastq.gz"
+
+script:
+"""
+#!/bin/bash
+
+ls -lah
+
+echo "dorado version \$(/opt/dorado/bin/dorado --version 2>&1)"
+
+
+dorado demux  --emit-fastq \
+    --emit-summary \
+    -o ${base}.barcoded_output \
+    --barcode-arrangement ${barcode_arrangement} \
+    --barcode-sequences ${barcode_sequences} \
+    -t ${task.cpus} \
+    ${basecalled_bam}
+
+
+
+find ${base}.barcoded_output/ -name *.fastq | xargs -I {} gzip {}
+
+"""
 }
 
 process Demux {

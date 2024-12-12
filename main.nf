@@ -2,6 +2,7 @@
 nextflow.enable.dsl=2
 include { Basecall } from './modules.nf'
 include { Basecall_custom } from './modules.nf'
+include { Demux_custom } from './modules.nf'
 include { Demux } from './modules.nf'
 include { Trim } from './modules.nf'
 
@@ -37,7 +38,14 @@ params.dorado_runoptions = ""
             params.BARCODE_ARRANGEMENT,
             params.BARCODE_SEQUENCES,
             params.dorado_runoptions
-	)   
+	)  
+        Demux_custom(
+            Basecall_custom.out,
+            file(params.SAMPLESHEET),
+            params.BASE,
+            params.BARCODE_ARRANGEMENT,
+            params.BARCODE_SEQUENCES,
+        ) 
         
         }
     }
