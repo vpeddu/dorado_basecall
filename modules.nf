@@ -76,7 +76,7 @@ echo "finished basecalling"
 
 process Demux_custom {
 //conda "${baseDir}/env/env.yml"
-publishDir "${params.output}/demux/", mode: 'symlink', overwrite: true
+publishDir "${params.output}/demux/", mode: 'copy', overwrite: true
 cpus 128
 memory '128 GB'
 container  "genomicpariscentre/dorado:0.8.3"
