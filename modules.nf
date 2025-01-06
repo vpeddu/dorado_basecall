@@ -65,7 +65,7 @@ ls -lah
 echo "using gpus: \$SLURM_JOB_GPUS"
 
 /opt/dorado/bin/dorado basecaller ${model} ${pod5} \
-    -x "cuda:\$SLURM_JOB_GPUS" \
+    -x "cuda:auto" \
     -r \
     --no-trim > ${base}.basecalled.bam
 
@@ -120,7 +120,7 @@ fi
 
 process Demux_custom {
 //conda "${baseDir}/env/env.yml"
-publishDir "${params.output}/demux/", mode: 'symlink', overwrite: true
+publishDir "${params.output}/demux/", mode: 'copy', overwrite: true
 cpus 128
 memory '128 GB'
 container  "genomicpariscentre/dorado:0.8.3"
@@ -162,7 +162,7 @@ find ${base}.barcoded_output/ -name *.fastq | xargs -I {} gzip {}
 
 process Demux {
 //conda "${baseDir}/env/env.yml"
-publishDir "${params.output}/demux/", mode: 'symlink', overwrite: true
+publishDir "${params.output}/demux/", mode: 'copy', overwrite: true
 cpus 32
 memory '128 GB'
 container  "genomicpariscentre/dorado:0.8.3"
